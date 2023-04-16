@@ -5,15 +5,17 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Models\Company;
+use App\Traits\GetsFiltersLogic;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Illuminate\Database\Eloquent\Builder;
 
 class CompanyResource extends Resource
 {
+    use GetsFiltersLogic;
+
     protected static ?string $model = Company::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
@@ -37,6 +39,7 @@ class CompanyResource extends Resource
 
                 Forms\Components\TextInput::make('email')
                     ->label('E-mail cím')
+                    ->unique()
                     ->email(),
 
                 Forms\Components\TextInput::make('website')
@@ -51,6 +54,24 @@ class CompanyResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $filters = [
+            [
+                'key' => 'name',
+                'label' => 'Megnevezés',
+                'column' => 'name',
+            ],
+            [
+                'key' => 'email',
+                'label' => 'E-mail cím',
+                'column' => 'email',
+            ],
+            [
+                'key' => 'website',
+                'label' => 'Weboldal URL címe',
+                'column' => 'website',
+            ],
+        ];
+
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('logo_path')
@@ -65,49 +86,7 @@ class CompanyResource extends Resource
                 Tables\Columns\TextColumn::make('website')
                     ->label('Weboldal URL címe'),
             ])
-            ->filters([
-                Tables\Filters\Filter::make('name')
-                    ->form([
-                        Forms\Components\TextInput::make('name')->label('Megnevezés'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['name'],
-                                function (Builder $query, string $name) {
-                                    $query->where('name', 'LIKE', "%{$name}%");
-                                },
-                            );
-                    }),
-
-                Tables\Filters\Filter::make('email')
-                    ->form([
-                        Forms\Components\TextInput::make('email')->label('E-mail cím'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['email'],
-                                function (Builder $query, string $title) {
-                                    $query->where('email', 'LIKE', "%{$title}%");
-                                },
-                            );
-                    }),
-
-                Tables\Filters\Filter::make('website')
-                    ->form([
-                        Forms\Components\TextInput::make('website')->label('Weboldal URL címe'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['website'],
-                                function (Builder $query, string $title) {
-                                    $query->where('website', 'LIKE', "%{$title}%");
-                                },
-                            );
-                    }),
-            ])
+            ->filters(self::getFilters($filters))
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
