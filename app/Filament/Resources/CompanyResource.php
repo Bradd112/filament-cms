@@ -81,10 +81,18 @@ class CompanyResource extends Resource
                     ->label('Megnevezés'),
 
                 Tables\Columns\TextColumn::make('email')
-                    ->label('E-mail cím'),
+                    ->label('E-mail cím')
+                    ->url(fn ($record) => "mailto:$record->email"),
 
                 Tables\Columns\TextColumn::make('website')
-                    ->label('Weboldal URL címe'),
+                    ->label('Weboldal URL címe')
+                    ->url(fn ($record) => $record->website, true),
+
+                Tables\Columns\TextColumn::make('employees')
+                    ->label('Alkalmazottak száma')
+                    ->formatStateUsing(function (string $state) {
+                        return count(json_decode($state, true)) . ' fő';
+                    }),
             ])
             ->filters(self::getFilters($filters))
             ->actions([

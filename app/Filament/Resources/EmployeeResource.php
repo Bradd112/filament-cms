@@ -94,10 +94,12 @@ class EmployeeResource extends Resource
                     ->label('Keresztnév'),
 
                 Tables\Columns\TextColumn::make('email')
-                    ->label('E-mail cím'),
+                    ->label('E-mail cím')
+                    ->url(fn ($record) => "mailto:$record->email"),
 
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telefonszám'),
+                    ->label('Telefonszám')
+                    ->url(fn ($record) => "tel:$record->email"),
 
                 Tables\Columns\TextColumn::make('company.name')
                     ->label('Cég'),
